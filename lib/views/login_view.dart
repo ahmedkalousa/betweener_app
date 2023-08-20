@@ -49,7 +49,7 @@ class _LoginViewState extends State<LoginView> {
         ));
       });
 
-      // Navigator.pushNamed(context, MainAppView.id);
+      Navigator.pushNamed(context, MainAppView.id);
     }
   }
 

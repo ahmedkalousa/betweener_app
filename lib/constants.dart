@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 // endpoints==================
-const baseUrl = 'https://www.osamapro.online/api';
+
+const baseUrl = 'http://www.osamapro.online/api';
 const loginUrl = '$baseUrl/login';
 const linksUrl = '$baseUrl/links';
+const followUrl = '$baseUrl/follow';
+const searchUrl = '$baseUrl/search';
 
 // ============= STYLE CONSTS ==============
 

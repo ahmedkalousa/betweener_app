@@ -3,6 +3,8 @@ import 'package:tt9_betweener_challenge/styles.dart';
 
 class CustomTextFormField extends StatelessWidget {
   final String label;
+  final ValueChanged<String>? onChanged;
+
   final String? hint;
   final TextEditingController? controller;
   final bool password;
@@ -17,7 +19,8 @@ class CustomTextFormField extends StatelessWidget {
       this.password = false,
       this.keyboardType,
       this.validator,
-      this.autofillHints});
+      this.autofillHints,
+      this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +35,7 @@ class CustomTextFormField extends StatelessWidget {
           height: 12,
         ),
         TextFormField(
+          onChanged: onChanged,
           keyboardType: keyboardType,
           controller: controller,
           validator: validator,
