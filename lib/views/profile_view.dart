@@ -1,9 +1,12 @@
 import 'dart:ffi';
 
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:tt9_betweener_challenge/controllers/follow_controller.dart';
 import 'package:tt9_betweener_challenge/controllers/user_controller.dart';
+import 'package:tt9_betweener_challenge/views/map_view.dart';
 import 'package:tt9_betweener_challenge/views/update_link.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../constants.dart';
 import '../controllers/link_controller.dart';
@@ -26,14 +29,30 @@ class ProfileView extends StatefulWidget {
 
 class _ProfileViewState extends State<ProfileView> {
   Color addressColor = Colors.blue;
-  MyLocation location = MyLocation();
+  MyLocation? location;
   late Future<User> user;
   late Future<List<Link>> links;
   late Future<Temperatures> follow = getfollows(context);
   List<Placemark>? placemarks;
-  Future<void> getPlaceMarks(lat, long) async {
-    placemarks =
-        await placemarkFromCoordinates(lat, long, localeIdentifier: 'en_US');
+  Future<List<Placemark>> getPlaceMarks(lat, long) async {
+    return await placemarkFromCoordinates(
+      lat,
+      long,
+    );
+  }
+
+  Future<void> openMap(double latitude, double longitude) async {
+    String googleUrl =
+        'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+    if (await canLaunch(googleUrl)) {
+      await launchUrl(
+          Uri.parse(
+            googleUrl,
+          ),
+          mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not open the map.';
+    }
   }
 
   Future<MyLocation> getLocation() async {
@@ -45,11 +64,20 @@ class _ProfileViewState extends State<ProfileView> {
 
   @override
   void initState() {
-    getLocation();
+    getLocation().then((value) async {
+      getPlaceMarks(value.lat, value.long).then((value) {
+        print(value);
+        setState(() {
+          placemarks = value;
+        });
+      });
+      setState(() {
+        location = value;
+      });
+    });
     user = getLocalUser();
     links = getLinks(context);
     follow;
-    getPlaceMarks(location.lat, location.long);
     // TODO: implement initState
     super.initState();
   }
@@ -246,9 +274,15 @@ class _ProfileViewState extends State<ProfileView> {
                                   width: 8,
                                 ),
                                 TextButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    if (location != null) {
+                                      openMap(location!.lat, location!.long);
+                                    }
+                                  },
                                   child: Text(
-                                    placemarks![0].name ?? 'Unknown Place',
+                                    placemarks != null
+                                        ? placemarks![0].name ?? 'Unknown Place'
+                                        : 'go to current location',
                                     style: TextStyle(
                                       color: kSecondaryColor,
                                     ),
@@ -376,7 +410,13 @@ class _ProfileViewState extends State<ProfileView> {
                   }
                   return Text('loading');
                 },
-              )
+              ),
+              SizedBox(height: 28),
+              if (location != null)
+                SizedBox(
+                  height: 300,
+                  child: MapView(latLng: LatLng(location!.lat, location!.long)),
+                )
             ],
           ),
         ),
